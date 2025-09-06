@@ -1,12 +1,15 @@
 import SwiftUI
+import SwiftData
 
 struct TopView: View {
     @StateObject private var vm = DeficitViewModel()
-    @FocusState private var intakeFocused: Bool
+    @Environment(\.modelContext) private var context
+    @StateObject private var meals = MealsStore.shared
+    @State private var showMeals = false
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 22) {
+            VStack(spacing: 32) {
                 // Ring + labels
                 ZStack {
                     RingView(progress: vm.ringProgress, color: vm.ringColor)
@@ -24,6 +27,7 @@ struct TopView: View {
                     }
                 }
                 .padding(.top, 8)
+                .padding(.vertical, 16)
 
                 // Stats
                 HStack {
@@ -32,9 +36,10 @@ struct TopView: View {
                     stat("Burned", vm.burned)
                 }
                 .padding(.horizontal)
+                .padding(.bottom, 12)
 
-                // Goal + Intake
-                VStack(alignment: .leading, spacing: 10) {
+                // Goal + Intake summary + Log Meal
+                VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("Daily Deficit Goal")
                         Spacer()
@@ -43,21 +48,20 @@ struct TopView: View {
                                 in: 100...1500, step: 50)
                             .labelsHidden()
                     }
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Intake today (kcal)")
-                        HStack {
-                            TextField("e.g. 1800", value: $vm.intake, format: .number)
-                                .keyboardType(.numberPad)
-                                .textFieldStyle(.roundedBorder)
-                                .focused($intakeFocused)
-                            Button("Clear") { vm.intake = 0 }
-                                .buttonStyle(.borderless)
-                        }
-                        Text("Red fills to break-even; green fills to your goal.")
-                            .font(.footnote)
+
+                    HStack {
+                        Text("Intake today: \(Int(meals.todayIntakeKcal)) kcal")
+                            .font(.subheadline)
                             .foregroundColor(.secondary)
+                        Spacer()
+                        Button {
+                            showMeals = true
+                        } label: {
+                            Label("Log Meal", systemImage: "fork.knife")
+                        }
                     }
                 }
+                .padding(.top, 12)
                 .padding(.horizontal)
 
                 Button {
@@ -65,11 +69,19 @@ struct TopView: View {
                 } label: {
                     Label("Refresh Today", systemImage: "arrow.clockwise")
                 }
+                .padding(.top, 16)
 
                 Spacer()
             }
             .navigationTitle("Deficit Overview")
-            .task { await vm.requestAuthAndLoadToday() }
+            .task {
+                await vm.requestAuthAndLoadToday()
+                meals.attach(context: context)
+                vm.bindMeals(meals)
+            }
+            .sheet(isPresented: $showMeals) {
+                NavigationView { MealsListView() }
+            }
         }
     }
 

@@ -13,5 +13,6 @@ struct DeficitApp: App {
         WindowGroup {
             TopView()
         }
+        .modelContainer(for: [Meal.self])   // <-- SwiftData container
     }
 }

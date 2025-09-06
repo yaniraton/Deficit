@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 final class DeficitViewModel: ObservableObject {
@@ -9,7 +10,7 @@ final class DeficitViewModel: ObservableObject {
     var burned: Double { activeKcal + basalKcal }
 
     // MVP intake + goal
-    @Published var intake: Double = 0
+    @Published private(set) var intake: Double = 0
     @AppStorage("dailyDeficitGoal") var goal: Double = 500
 
     // Derived
@@ -39,6 +40,16 @@ final class DeficitViewModel: ObservableObject {
             let remain = max(0, intake - burned)
             return "To break even: \(Int(remain)) kcal"
         }
+    }
+
+    private var cancellables = Set<AnyCancellable>()
+
+    /// Bind intake to MealsStore's published todayIntakeKcal
+    func bindMeals(_ store: MealsStore = .shared) {
+        store.$todayIntakeKcal
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.intake, on: self)
+            .store(in: &cancellables)
     }
 
     // MARK: - Health loads
