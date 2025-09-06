@@ -11,7 +11,7 @@ import SwiftUI
 struct DeficitApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TopView()
         }
     }
 }
