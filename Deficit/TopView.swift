@@ -1,78 +1,100 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct TopView: View {
     @StateObject private var vm = DeficitViewModel()
     @Environment(\.modelContext) private var context
     @StateObject private var meals = MealsStore.shared
     @State private var showMeals = false
+    @State private var showAddMeal = false
+    @State private var lastInDeficit: Bool = false
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 32) {
-                // Ring + labels
-                ZStack {
-                    RingView(progress: vm.ringProgress, color: vm.ringColor)
-                        .frame(width: 220, height: 220)
+            ScrollView {
+                VStack(spacing: 32) {
+                    // Ring + labels
+                    ZStack {
+                        RingView(progress: vm.ringProgress, color: vm.ringColor)
+                            .frame(width: 220, height: 220)
 
-                    VStack(spacing: 6) {
-                        Text(vm.headline)
-                            .font(.headline)
-                            .foregroundStyle(vm.ringColor)
-                        Text("\(Int(vm.net.rounded())) kcal")
-                            .font(.system(size: 36, weight: .bold, design: .rounded))
-                        Text(vm.sublabel)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .padding(.top, 8)
-                .padding(.vertical, 16)
-
-                // Stats
-                HStack {
-                    stat("Active", vm.activeKcal)
-                    stat("Basal",  vm.basalKcal)
-                    stat("Burned", vm.burned)
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 12)
-
-                // Goal + Intake summary + Log Meal
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Text("Daily Deficit Goal")
-                        Spacer()
-                        Stepper("\(Int(vm.goal)) kcal",
-                                value: $vm.goal,
-                                in: 100...1500, step: 50)
-                            .labelsHidden()
-                    }
-
-                    HStack {
-                        Text("Intake today: \(Int(meals.todayIntakeKcal)) kcal")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Button {
-                            showMeals = true
-                        } label: {
-                            Label("Log Meal", systemImage: "fork.knife")
+                        VStack(spacing: 6) {
+                            Text(vm.headline)
+                                .font(.headline)
+                                .foregroundStyle(vm.ringColor)
+                            Text("\(Int(vm.net.rounded())) kcal")
+                                .font(.system(size: 36, weight: .semibold, design: .rounded))
+                                .monospacedDigit()
+                                .contentTransition(.numericText(value: vm.net))
+                            Text(vm.sublabel)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                         }
                     }
-                }
-                .padding(.top, 12)
-                .padding(.horizontal)
+                    .padding(.top, 8)
+                    .padding(.vertical, 16)
+                    .onChange(of: vm.inDeficit) { newValue in
+                        if newValue {
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        }
+                    }
 
-                Button {
-                    Task { try? await vm.reloadToday() }
-                } label: {
-                    Label("Refresh Today", systemImage: "arrow.clockwise")
-                }
-                .padding(.top, 16)
+                    // Stats
+                    HStack {
+                        stat("Active", vm.activeKcal)
+                        stat("Basal",  vm.basalKcal)
+                        stat("Burned", vm.burned)
+                    }
+                    .padding(.bottom, 12)
 
-                Spacer()
+                    // Goal + Intake summary + Log Meal
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Text("Daily Deficit Goal")
+                            Spacer()
+                            Stepper("\(Int(vm.goal)) kcal",
+                                    value: $vm.goal,
+                                    in: 100...1500, step: 50)
+                                .labelsHidden()
+                                .onChange(of: vm.goal) { _ in
+                                    UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+                                }
+                        }
+
+                        HStack {
+                            Text("Intake today: \(Int(meals.todayIntakeKcal)) kcal")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Button {
+                                showMeals = true
+                            } label: {
+                                Label("Log Meal", systemImage: "fork.knife")
+                            }
+                        }
+                    }
+                    .padding(.top, 12)
+
+                    Button {
+                        Task {
+                            do {
+                                try await vm.reloadToday()
+                                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                            } catch {
+                                // no haptic on failure for now
+                            }
+                        }
+                    } label: {
+                        Label("Refresh Today", systemImage: "arrow.clockwise")
+                    }
+                    .padding(.top, 16)
+
+                    Spacer()
+                }
             }
+            .contentMargins(.horizontal, 20, for: .scrollContent)
+            .safeAreaPadding(.bottom, 16)
             .navigationTitle("Deficit Overview")
             .task {
                 await vm.requestAuthAndLoadToday()
@@ -81,6 +103,14 @@ struct TopView: View {
             }
             .sheet(isPresented: $showMeals) {
                 NavigationView { MealsListView() }
+            }
+            .sheet(isPresented: $showAddMeal) {
+                AddMealSheet()
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showAddMeal = true } label: { Image(systemName: "plus") }
+                }
             }
         }
     }

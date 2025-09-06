@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct MealsListView: View {
     @Environment(\.modelContext) private var context
@@ -33,6 +34,7 @@ struct MealsListView: View {
                         .swipeActions {
                             Button(role: .destructive) {
                                 try? store.deleteMeal(meal)
+                                UINotificationFeedbackGenerator().notificationOccurred(.warning)
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
@@ -59,4 +61,3 @@ struct MealsListView: View {
         }
     }
 }
-

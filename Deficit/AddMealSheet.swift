@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct AddMealSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -36,6 +37,7 @@ struct AddMealSheet: View {
                     Button("Save") {
                         Task {
                             try? await MealsStore.shared.addMeal(name: name, kcal: kcal, date: date)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             dismiss()
                         }
                     }
