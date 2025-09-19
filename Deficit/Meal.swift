@@ -6,6 +6,7 @@ final class Meal {
     @Attribute(.unique) var id: UUID
     var name: String
     var kcal: Double
+    var proteinGrams: Double = 0
     var date: Date
     var createdAt: Date
     var updatedAt: Date
@@ -16,11 +17,13 @@ final class Meal {
     init(id: UUID = UUID(),
          name: String = "Meal",
          kcal: Double,
+         proteinGrams: Double = 0,
          date: Date = Date(),
          source: String = "local") {
         self.id = id
         self.name = name.isEmpty ? "Meal" : name
         self.kcal = max(0, kcal)
+        self.proteinGrams = max(0, proteinGrams)
         self.date = date
         self.createdAt = Date()
         self.updatedAt = Date()

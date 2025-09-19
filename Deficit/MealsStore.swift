@@ -9,6 +9,7 @@ final class MealsStore: ObservableObject {
 
     @Published private(set) var todayMeals: [Meal] = []
     @Published private(set) var todayIntakeKcal: Double = 0
+    @Published private(set) var todayProteinGrams: Double = 0
 
     private var modelContext: ModelContext?
     private let calendar = Calendar.current
@@ -30,20 +31,22 @@ final class MealsStore: ObservableObject {
         let meals = (try? ctx.fetch(descriptor)) ?? []
         todayMeals = meals
         todayIntakeKcal = meals.reduce(0) { $0 + $1.kcal }
+        todayProteinGrams = meals.reduce(0) { $0 + $1.proteinGrams }
     }
 
-    func addMeal(name: String, kcal: Double, date: Date = Date()) async throws {
+    func addMeal(name: String, kcal: Double, proteinGrams: Double = 0, date: Date = Date()) async throws {
         guard let ctx = modelContext else { return }
-        let meal = Meal(name: name, kcal: kcal, date: date)
+        let meal = Meal(name: name, kcal: kcal, proteinGrams: proteinGrams, date: date)
         ctx.insert(meal)
         try ctx.save()
         await reloadToday()
     }
 
-    func updateMeal(_ meal: Meal, name: String, kcal: Double, date: Date) throws {
+    func updateMeal(_ meal: Meal, name: String, kcal: Double, proteinGrams: Double, date: Date) throws {
         guard let ctx = modelContext else { return }
         meal.name = name.isEmpty ? "Meal" : name
         meal.kcal = max(0, kcal)
+        meal.proteinGrams = max(0, proteinGrams)
         meal.date = date
         meal.updatedAt = Date()
         try ctx.save()

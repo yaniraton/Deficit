@@ -6,6 +6,7 @@ struct MealsListView: View {
     @Environment(\.modelContext) private var context
     @StateObject private var store = MealsStore.shared
     @State private var showingAdd = false
+    @AppStorage("proteinFeatureEnabled") private var proteinEnabled: Bool = true
 
     var body: some View {
         List {
@@ -29,7 +30,14 @@ struct MealsListView: View {
                                     .font(.caption).foregroundColor(.secondary)
                             }
                             Spacer()
-                            Text("\(Int(meal.kcal)) kcal").bold()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text("\(Int(meal.kcal)) kcal").bold()
+                                if proteinEnabled {
+                                    Text("\(Int(meal.proteinGrams))g protein")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                         }
                         .swipeActions {
                             Button(role: .destructive) {
@@ -42,7 +50,9 @@ struct MealsListView: View {
                     }
                 }
 
-                Section(footer: Text("Total today: \(Int(store.todayIntakeKcal)) kcal")) {
+                Section(footer: Text(proteinEnabled ? 
+                    "Total today: \(Int(store.todayIntakeKcal)) kcal • \(Int(store.todayProteinGrams))g protein" :
+                    "Total today: \(Int(store.todayIntakeKcal)) kcal")) {
                     EmptyView()
                 }
             }

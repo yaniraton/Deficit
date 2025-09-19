@@ -13,6 +13,15 @@ final class DeficitViewModel: ObservableObject {
     @Published private(set) var intake: Double = 0
     @AppStorage("dailyDeficitGoal") var goal: Double = 500
 
+    // Protein feature
+    @Published private(set) var todayProteinGrams: Double = 0
+    @AppStorage("proteinFeatureEnabled") var proteinEnabled: Bool = true
+    @AppStorage("dailyProteinGoalGrams") var proteinGoalGrams: Double = 50
+    var proteinProgress: Double {
+        guard proteinGoalGrams > 0 else { return 0 }
+        return min(max(todayProteinGrams / proteinGoalGrams, 0), 1)
+    }
+
     // Derived
     var net: Double { burned - intake }
     var inDeficit: Bool { net >= 0 }
@@ -43,12 +52,16 @@ final class DeficitViewModel: ObservableObject {
     }
 
     private var cancellables = Set<AnyCancellable>()
-
-    /// Bind intake to MealsStore's published todayIntakeKcal
+    /// Bind intake and protein to MealsStore's published values
     func bindMeals(_ store: MealsStore = .shared) {
         store.$todayIntakeKcal
             .receive(on: DispatchQueue.main)
             .assign(to: \.intake, on: self)
+            .store(in: &cancellables)
+
+        store.$todayProteinGrams
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.todayProteinGrams, on: self)
             .store(in: &cancellables)
     }
 

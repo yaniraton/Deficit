@@ -12,6 +12,7 @@ struct DeficitApp: App {
     var body: some Scene {
         WindowGroup {
             TopView()
+            
         }
         .modelContainer(for: [Meal.self])   // <-- SwiftData container
     }

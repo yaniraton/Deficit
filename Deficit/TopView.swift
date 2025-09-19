@@ -16,6 +16,13 @@ struct TopView: View {
                 VStack(spacing: 32) {
                     // Ring + labels
                     ZStack {
+                        // Protein ring (outer) when enabled
+                        if vm.proteinEnabled {
+                            RingView(progress: vm.proteinProgress, lineWidth: 12, color: .blue)
+                                .frame(width: 250, height: 250)
+                        }
+
+                        // Deficit ring (inner)
                         RingView(progress: vm.ringProgress, color: vm.ringColor)
                             .frame(width: 220, height: 220)
 
@@ -110,6 +117,11 @@ struct TopView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showAddMeal = true } label: { Image(systemName: "plus") }
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink(destination: SettingsView()) {
+                        Image(systemName: "gearshape")
+                    }
                 }
             }
         }
