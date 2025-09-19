@@ -9,6 +9,7 @@ struct TopView: View {
     @State private var showMeals = false
     @State private var showAddMeal = false
     @State private var lastInDeficit: Bool = false
+    @State private var showBurnedDetails = false
 
     var body: some View {
         NavigationView {
@@ -48,10 +49,45 @@ struct TopView: View {
                     }
 
                     // Stats
-                    HStack {
-                        stat("Active", vm.activeKcal)
-                        stat("Basal",  vm.basalKcal)
-                        stat("Burned", vm.burned)
+                    VStack(spacing: 12) {
+                        // Main stats row
+                        HStack {
+                            // Burned card with long press
+                            stat("Burned", vm.burned)
+                                .onLongPressGesture(minimumDuration: 0.1) {
+                                    // Empty completion handler - we handle everything in onPressingChanged
+                                } onPressingChanged: { pressing in
+                                    if pressing {
+                                        // User started pressing - show details
+                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            showBurnedDetails = true
+                                        }
+                                    } else {
+                                        // User lifted finger - hide details
+                                        withAnimation(.easeInOut(duration: 0.2)) {
+                                            showBurnedDetails = false
+                                        }
+                                    }
+                                }
+                            
+                            // Protein card (when enabled)
+                            if vm.proteinEnabled {
+                                proteinStat()
+                            }
+                        }
+                        
+                        // Expanded burned details
+                        if showBurnedDetails {
+                            HStack {
+                                stat("Active", vm.activeKcal)
+                                stat("Basal", vm.basalKcal)
+                            }
+                            .transition(.asymmetric(
+                                insertion: .opacity.combined(with: .move(edge: .top)),
+                                removal: .opacity.combined(with: .move(edge: .top))
+                            ))
+                        }
                     }
                     .padding(.bottom, 12)
 
@@ -131,6 +167,18 @@ struct TopView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title).font(.caption).foregroundColor(.secondary)
             Text("\(Int(value.rounded())) kcal").font(.headline)
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+    
+    private func proteinStat() -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Protein").font(.caption).foregroundColor(.secondary)
+            Text("\(Int(vm.todayProteinGrams))g / \(Int(vm.proteinGoalGrams))g")
+                .font(.headline)
+                .foregroundColor(.blue)
         }
         .padding()
         .frame(maxWidth: .infinity)
