@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		394AC9982E7F1F6D000662BD /* Deficit Watch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 394AC9782E7F1F6B000662BD /* Deficit Watch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		390253E52E6C240E005339C7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,12 +25,50 @@
 			remoteGlobalIDString = 390253D32E6C240B005339C7;
 			remoteInfo = Deficit;
 		};
+		394AC9852E7F1F6D000662BD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 390253CC2E6C240B005339C7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 394AC9772E7F1F6B000662BD;
+			remoteInfo = "Deficit Watch Watch App";
+		};
+		394AC98F2E7F1F6D000662BD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 390253CC2E6C240B005339C7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 394AC9772E7F1F6B000662BD;
+			remoteInfo = "Deficit Watch Watch App";
+		};
+		394AC9962E7F1F6D000662BD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 390253CC2E6C240B005339C7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 394AC9772E7F1F6B000662BD;
+			remoteInfo = "Deficit Watch Watch App";
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		394AC99C2E7F1F6D000662BD /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				394AC9982E7F1F6D000662BD /* Deficit Watch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		390253D42E6C240B005339C7 /* Deficit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Deficit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		390253E42E6C240E005339C7 /* DeficitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeficitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		390253EE2E6C240E005339C7 /* DeficitUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeficitUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		394AC9782E7F1F6B000662BD /* Deficit Watch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Deficit Watch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		394AC9842E7F1F6D000662BD /* Deficit Watch Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Deficit Watch Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		394AC98E2E7F1F6D000662BD /* Deficit Watch Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Deficit Watch Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -43,6 +85,21 @@
 		390253F12E6C240E005339C7 /* DeficitUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = DeficitUITests;
+			sourceTree = "<group>";
+		};
+		394AC9792E7F1F6B000662BD /* Deficit Watch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Deficit Watch Watch App";
+			sourceTree = "<group>";
+		};
+		394AC9872E7F1F6D000662BD /* Deficit Watch Watch AppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Deficit Watch Watch AppTests";
+			sourceTree = "<group>";
+		};
+		394AC9912E7F1F6D000662BD /* Deficit Watch Watch AppUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Deficit Watch Watch AppUITests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -69,6 +126,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		394AC9752E7F1F6B000662BD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		394AC9812E7F1F6D000662BD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		394AC98B2E7F1F6D000662BD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -78,6 +156,9 @@
 				390253D62E6C240B005339C7 /* Deficit */,
 				390253E72E6C240E005339C7 /* DeficitTests */,
 				390253F12E6C240E005339C7 /* DeficitUITests */,
+				394AC9792E7F1F6B000662BD /* Deficit Watch Watch App */,
+				394AC9872E7F1F6D000662BD /* Deficit Watch Watch AppTests */,
+				394AC9912E7F1F6D000662BD /* Deficit Watch Watch AppUITests */,
 				390253D52E6C240B005339C7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,6 +169,9 @@
 				390253D42E6C240B005339C7 /* Deficit.app */,
 				390253E42E6C240E005339C7 /* DeficitTests.xctest */,
 				390253EE2E6C240E005339C7 /* DeficitUITests.xctest */,
+				394AC9782E7F1F6B000662BD /* Deficit Watch Watch App.app */,
+				394AC9842E7F1F6D000662BD /* Deficit Watch Watch AppTests.xctest */,
+				394AC98E2E7F1F6D000662BD /* Deficit Watch Watch AppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -102,10 +186,12 @@
 				390253D02E6C240B005339C7 /* Sources */,
 				390253D12E6C240B005339C7 /* Frameworks */,
 				390253D22E6C240B005339C7 /* Resources */,
+				394AC99C2E7F1F6D000662BD /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				394AC9972E7F1F6D000662BD /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				390253D62E6C240B005339C7 /* Deficit */,
@@ -163,6 +249,74 @@
 			productReference = 390253EE2E6C240E005339C7 /* DeficitUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		394AC9772E7F1F6B000662BD /* Deficit Watch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 394AC9992E7F1F6D000662BD /* Build configuration list for PBXNativeTarget "Deficit Watch Watch App" */;
+			buildPhases = (
+				394AC9742E7F1F6B000662BD /* Sources */,
+				394AC9752E7F1F6B000662BD /* Frameworks */,
+				394AC9762E7F1F6B000662BD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				394AC9792E7F1F6B000662BD /* Deficit Watch Watch App */,
+			);
+			name = "Deficit Watch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "Deficit Watch Watch App";
+			productReference = 394AC9782E7F1F6B000662BD /* Deficit Watch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		394AC9832E7F1F6D000662BD /* Deficit Watch Watch AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 394AC99D2E7F1F6D000662BD /* Build configuration list for PBXNativeTarget "Deficit Watch Watch AppTests" */;
+			buildPhases = (
+				394AC9802E7F1F6D000662BD /* Sources */,
+				394AC9812E7F1F6D000662BD /* Frameworks */,
+				394AC9822E7F1F6D000662BD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				394AC9862E7F1F6D000662BD /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				394AC9872E7F1F6D000662BD /* Deficit Watch Watch AppTests */,
+			);
+			name = "Deficit Watch Watch AppTests";
+			packageProductDependencies = (
+			);
+			productName = "Deficit Watch Watch AppTests";
+			productReference = 394AC9842E7F1F6D000662BD /* Deficit Watch Watch AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		394AC98D2E7F1F6D000662BD /* Deficit Watch Watch AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 394AC9A02E7F1F6D000662BD /* Build configuration list for PBXNativeTarget "Deficit Watch Watch AppUITests" */;
+			buildPhases = (
+				394AC98A2E7F1F6D000662BD /* Sources */,
+				394AC98B2E7F1F6D000662BD /* Frameworks */,
+				394AC98C2E7F1F6D000662BD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				394AC9902E7F1F6D000662BD /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				394AC9912E7F1F6D000662BD /* Deficit Watch Watch AppUITests */,
+			);
+			name = "Deficit Watch Watch AppUITests";
+			packageProductDependencies = (
+			);
+			productName = "Deficit Watch Watch AppUITests";
+			productReference = 394AC98E2E7F1F6D000662BD /* Deficit Watch Watch AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -170,7 +324,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1620;
+				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					390253D32E6C240B005339C7 = {
@@ -183,6 +337,17 @@
 					390253ED2E6C240E005339C7 = {
 						CreatedOnToolsVersion = 16.2;
 						TestTargetID = 390253D32E6C240B005339C7;
+					};
+					394AC9772E7F1F6B000662BD = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					394AC9832E7F1F6D000662BD = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = 394AC9772E7F1F6B000662BD;
+					};
+					394AC98D2E7F1F6D000662BD = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = 394AC9772E7F1F6B000662BD;
 					};
 				};
 			};
@@ -203,6 +368,9 @@
 				390253D32E6C240B005339C7 /* Deficit */,
 				390253E32E6C240E005339C7 /* DeficitTests */,
 				390253ED2E6C240E005339C7 /* DeficitUITests */,
+				394AC9772E7F1F6B000662BD /* Deficit Watch Watch App */,
+				394AC9832E7F1F6D000662BD /* Deficit Watch Watch AppTests */,
+				394AC98D2E7F1F6D000662BD /* Deficit Watch Watch AppUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +391,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		390253EC2E6C240E005339C7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		394AC9762E7F1F6B000662BD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		394AC9822E7F1F6D000662BD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		394AC98C2E7F1F6D000662BD /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -253,6 +442,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		394AC9742E7F1F6B000662BD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		394AC9802E7F1F6D000662BD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		394AC98A2E7F1F6D000662BD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -265,6 +475,21 @@
 			isa = PBXTargetDependency;
 			target = 390253D32E6C240B005339C7 /* Deficit */;
 			targetProxy = 390253EF2E6C240E005339C7 /* PBXContainerItemProxy */;
+		};
+		394AC9862E7F1F6D000662BD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 394AC9772E7F1F6B000662BD /* Deficit Watch Watch App */;
+			targetProxy = 394AC9852E7F1F6D000662BD /* PBXContainerItemProxy */;
+		};
+		394AC9902E7F1F6D000662BD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 394AC9772E7F1F6B000662BD /* Deficit Watch Watch App */;
+			targetProxy = 394AC98F2E7F1F6D000662BD /* PBXContainerItemProxy */;
+		};
+		394AC9972E7F1F6D000662BD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 394AC9772E7F1F6B000662BD /* Deficit Watch Watch App */;
+			targetProxy = 394AC9962E7F1F6D000662BD /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -522,6 +747,162 @@
 			};
 			name = Release;
 		};
+		394AC99A2E7F1F6D000662BD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = deficit_icon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = G92CCSL74P;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Deficit Watch";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.yanir.Deficit;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yanir.Deficit.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		394AC99B2E7F1F6D000662BD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = deficit_icon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = G92CCSL74P;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Deficit Watch";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.yanir.Deficit;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yanir.Deficit.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+		394AC99E2E7F1F6D000662BD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = G92CCSL74P;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yanir.Deficit-Watch-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Deficit Watch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Deficit Watch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		394AC99F2E7F1F6D000662BD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = G92CCSL74P;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yanir.Deficit-Watch-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Deficit Watch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Deficit Watch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+		394AC9A12E7F1F6D000662BD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = G92CCSL74P;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yanir.Deficit-Watch-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "Deficit Watch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		394AC9A22E7F1F6D000662BD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = G92CCSL74P;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yanir.Deficit-Watch-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "Deficit Watch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -557,6 +938,33 @@
 			buildConfigurations = (
 				390253FF2E6C240E005339C7 /* Debug */,
 				390254002E6C240E005339C7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		394AC9992E7F1F6D000662BD /* Build configuration list for PBXNativeTarget "Deficit Watch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				394AC99A2E7F1F6D000662BD /* Debug */,
+				394AC99B2E7F1F6D000662BD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		394AC99D2E7F1F6D000662BD /* Build configuration list for PBXNativeTarget "Deficit Watch Watch AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				394AC99E2E7F1F6D000662BD /* Debug */,
+				394AC99F2E7F1F6D000662BD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		394AC9A02E7F1F6D000662BD /* Build configuration list for PBXNativeTarget "Deficit Watch Watch AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				394AC9A12E7F1F6D000662BD /* Debug */,
+				394AC9A22E7F1F6D000662BD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

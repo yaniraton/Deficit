@@ -1,0 +1,94 @@
+# Cursor Rules — Deficit (iOS App)
+# Purpose: Give the model the persistent context + constraints for this project.
+
+## Project Context
+- App name: **Deficit** — iOS app in Swift/SwiftUI using **SwiftData** and **HealthKit**.
+- Core idea: Visualize daily **calorie deficit** like an Apple Fitness ring, with optional **protein tracking**.
+  - Burned calories = **active + basal** energy from HealthKit (today).
+  - Intake = sum of **Meals** logged locally (SwiftData).
+  - Ring behavior:
+    - **Surplus (not in deficit)**: red, progress = burned / intake (toward break-even).
+    - **Deficit**: green, progress = (burned − intake) / goal (toward user goal).
+  - **Protein ring**: blue, progress = protein consumed / protein goal (can exceed 100%).
+- Structure (MVVM):
+  - **HealthStore.swift**: HK auth + today's energy (active + basal) + daily range queries.
+  - **MealsStore.swift**: SwiftData CRUD; quick-add; cleanup; day-range queries for history.
+  - **DeficitViewModel.swift**: combines Health + Meals; computes net/progress/color/labels; goal via @AppStorage; protein tracking.
+  - **TopView.swift**: dual rings (deficit + protein), interactive stats, navigation to calendar/settings.
+  - **Meal.swift**: SwiftData model with protein tracking.
+  - **AddMealSheet.swift**: add/edit meal with name/kcal/protein/date; supports edit mode.
+  - **EditMealSheet.swift**: wrapper for editing existing meals.
+  - **MealsListView.swift**: meal list with protein display, swipe actions (edit/delete).
+  - **SettingsView.swift**: deficit goal, protein feature toggle, protein goal stepper.
+  - **CalendarView.swift**: month grid with tiny dual rings, navigation to day details.
+  - **CalendarViewModel.swift**: manages calendar data, prefetches daily summaries.
+  - **DayDetailView.swift**: detailed view for specific day with big dual rings and meal list.
+  - **DailySummary.swift**: SwiftData model for caching daily health + meal data.
+  - **RingView.swift**: reusable ring component for deficit and protein progress.
+
+## Current Behavior & Constraints
+- Haptics:
+  - Break-even flip (surplus→deficit): **success**.
+  - Add meal: **light impact**.
+  - Delete meal: **warning**.
+  - Goal stepper: **rigid tick**.
+  - Refresh success: **success**.
+  - Protein goal achievement: **success** (when protein progress crosses 100%).
+- UI style: "Apple-y" — semantic colors, Dynamic Type, monospaced digits for numbers, restrained motion, balanced spacing, large titles, SF Symbols.
+- Protein feature:
+  - Toggleable via settings (enables/disables protein ring and input fields).
+  - Default goal: 50g protein per day.
+  - Ring can exceed 100% progress (over-goal state).
+  - Integrated throughout: main view, meal input, meal list, calendar, day details.
+- History system:
+  - Calendar view with month navigation and tiny dual rings.
+  - Day detail view with big dual rings and meal list for specific days.
+  - Cached daily summaries for performance (DailySummary model).
+  - Real-time data fetching for accurate historical information.
+- Testing: 
+  - Unit tests for **DeficitViewModel** math (surplus/deficit/guards).
+  - SwiftData tests with **in-memory** container for MealsStore.
+  - Optional UI tests for AddMeal flow.
+- Privacy strings must exist in **Info.plist**:
+  - `NSHealthShareUsageDescription` (and `NSHealthUpdateUsageDescription` if writing)
+
+## Coding Guidelines
+- Target iOS 17+. Prefer SwiftUI + SwiftData idioms.
+- Keep **View bodies** simple; extract sections into `@ViewBuilder` helpers to avoid slow type-checking.
+- Use `@MainActor` for observable stores/VMs that mutate UI-bound state.
+- Use **Combine** to bind `MealsStore.$todayIntakeKcal` → `DeficitViewModel.intake` and `MealsStore.$todayProteinGrams` → `DeficitViewModel.protein`.
+- For files & images: no blobs in DB. Store filenames + metadata in SwiftData; bytes on disk via `ImageStore`.
+- SwiftData migration: Always provide default values for new non-optional properties to prevent migration errors.
+- When adding features:
+  1) Define/extend the **model** (with proper defaults for SwiftData).
+  2) Add store APIs (CRUD, queries, predicates).
+  3) Wire to **VM** if it affects top-level logic.
+  4) Build UI with clean composition and Apple HIG patterns.
+  5) Update history system if feature affects daily tracking.
+- Error handling: fail soft, never crash UI; log and surface friendly messages when needed.
+- Accessibility: don't rely on color alone; provide clear labels; enable Dynamic Type.
+- Performance: Use caching (DailySummary) for historical data; prefetch calendar data efficiently.
+
+## When asked for code
+- Provide **compilable Swift** with minimal, explicit imports.
+- If modifying multiple files, **list each file** with only the necessary diffs.
+- Prefer **incremental** changes. If a change is large, stage it: models → store → UI.
+- If a predicate/type mismatch is possible, call it out and guard against it.
+
+## When asked for tests
+- Use in-memory SwiftData container (`ModelConfiguration(isStoredInMemoryOnly: true)`).
+- Cover at least: ring math, meals add/delete, protein tracking, calendar data.
+- Test SwiftData migration scenarios with new properties.
+- Name tests descriptively; keep deterministic and fast.
+
+## Non-goals (for now)
+- No HealthKit write for meals yet (read-only burn). A toggle can be added later.
+- No complex nutrition DB / barcode scanning yet (future).
+- No cloud sync yet.
+- No advanced calendar features (year view, custom date ranges).
+
+## Quick Commands the model can suggest
+- Refresh rings: `DeficitViewModel.reloadToday()` and `MealsStore.reloadToday()`
+- Navigate calendar: `CalendarViewModel.navigateMonth(by: 1)` or `CalendarViewModel.navigateMonth(by: -1)`
+- Prefetch calendar data: `CalendarViewModel.prefetchMonthCentered(on: date)`
+- Add meal with protein: `MealsStore.addMeal(name: "Lunch", kcal: 500, proteinGrams: 25)`

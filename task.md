@@ -1,225 +1,246 @@
-
-# Cursor Task: Implement Fitness-style Calendar + Day Detail (Deficit iOS)
-
-## Goal
-
-Add a **Calendar** screen that looks/behaves like the iPhone **Fitness** app’s calendar:
-
-* Month grid with **tiny rings** under each date.
-* Shows the **end-of-day snapshot** of the ring for that date (same ring rules we use today).
-* Tapping a date opens a **Day Detail** screen:
-
-  * Big ring for that date (same as TopView logic, computed for that day)
-  * Below: the **meals list for that date** (same UI/CRUD as MealsListView, but scoped to that day)
-  * A small summary row (Burned / Intake / Net / Goal)
-* Scope time to **last 12 months** only.
-* Use **caching** so the grid scrolls smoothly and we don’t recompute data repeatedly.
-
-## Data Model & Caching
-
-Create a lightweight SwiftData model to cache the daily snapshot (one per day):
-
-```swift
-@Model
-final class DailySummary {
-  @Attribute(.unique) var id: UUID
-  var date: Date               // normalized to startOfDay (local TZ)
-  var burnedKcal: Double       // active + basal (end-of-day)
-  var intakeKcal: Double       // meals total that day
-  var goalKcal: Double         // snapshot of the user’s goal *for that day*
-  var netKcal: Double          // burned - intake
-  var inDeficit: Bool          // net >= 0
-  var progress: Double         // snapshot ring progress at EOD (0...1)
-  var colorMode: String        // "red" or "green" for quick render
-  var createdAt: Date
-  var updatedAt: Date
-}
-```
-
-Notes:
-
-* This is a **snapshot** at end-of-day using the **rules today uses**:
-
-  * Surplus: progress = `burned / intake` (clamped 0…1), color = red
-  * Deficit: progress = `(burned - intake) / goal` (clamped 0…1), color = green
-* Use device TZ (Asia/Jerusalem) for start/end-of-day. Store `date` normalized to **startOfDay**.
-* If data is missing for a day (no Health or no Meals), snapshot uses zeros and `colorMode="gray"` and `progress=0`.
-
-## Health & Meals Range Fetching
-
-Extend **HealthStore** with **range** APIs (uses `HKStatisticsCollectionQuery`) that return per-day totals for a date range for both **active** and **basal** energy. We already read those types today; just add range utilities:
-
-```swift
-struct DailyEnergy {
-  let date: Date         // startOfDay
-  let activeKcal: Double
-  let basalKcal: Double
-  var burnedKcal: Double { activeKcal + basalKcal }
-}
-
-extension HealthStore {
-  func dailyEnergy(from start: Date, to end: Date) async throws -> [DailyEnergy]
-}
-```
-
-Extend **MealsStore** with a day-range intake query:
-
-```swift
-extension MealsStore {
-  func intake(forDay dayStart: Date, dayEnd: Date) throws -> Double
-  func meals(forDay dayStart: Date, dayEnd: Date) throws -> [Meal]
-}
-```
-
-* Both use local TZ. `dayEnd = startOfDay(next day)`.
-* These are pure queries; no UI.
-
-## Calendar ViewModel
-
-Add a new **CalendarViewModel** (ObservableObject, @MainActor) that:
-
-* Maintains the **current month** (shown in UI), and the **last 12 months** range.
-* On month change or initial load, **prefetch** summaries for **visible month ±1 month**.
-* Fills/updates **DailySummary** cache for each day in range:
-
-  1. Fetch daily Health totals for range (active+basal).
-  2. For each day:
-
-     * Compute intake by querying MealsStore for \[dayStart, dayEnd).
-     * Goal: snapshot the goal used **on that day** (store `vm.goal` at the time of snapshot creation; if no snapshot exists, use **current goal**).
-     * Derive net, inDeficit, progress, colorMode (red/green/gray).
-  3. Upsert **DailySummary** rows in SwiftData (idempotent).
-* Expose published properties:
-
-  ```swift
-  @Published var monthDays: [Date]           // all calendar cells (including leading/trailing blanks)
-  @Published var summariesByDay: [Date: DailySummary]
-  @Published var isLoading: Bool
-  ```
-* Provides helpers:
-
-  ```swift
-  func monthRange(for date: Date) -> (start: Date, end: Date)
-  func prefetchMonthCentered(on monthStart: Date)
-  func summary(forDay dayStart: Date) -> DailySummary?
-  ```
-
-## Calendar UI (Month Grid)
-
-New screen: **CalendarView**
-
-* Navigation title: “History”
-* Month header with chevrons (◀︎ ▶︎) to navigate months (last 12 months only).
-* Grid layout: 7 columns, rows enough to cover the month. Week start: **use system default** (simpler).
-* Each cell shows:
-
-  * **date number** (1..31) at top
-  * **tiny ring** just **below the date number** (like Fitness):
-
-    * red/green/gray based on `colorMode`
-    * ring progress is `summary.progress`
-  * **empty gray ring** on days without data (future days are dimmed/disabled)
-* No special highlight for “today” or selection.
-* Tap a past (or today) date to navigate to **DayDetailView**.
-* Haptics:
-
-  * Light **tick** on month change (chevrons)
-  * Light **tick** on date tap/selection
-
-Behavior:
-
-* Only last **12 months** are navigable (including the current month).
-* Future days are dimmed and disabled (show gray empty ring).
-
-## Day Detail UI
-
-New screen: **DayDetailView**
-
-* Inputs: `dayStart: Date`
-* ViewModel computes for that day:
-
-  * burned, intake, goal, net, inDeficit, progress (reads from **DailySummary** if present; else compute on the fly, then upsert cache)
-  * `mealsForDay`: query MealsStore \[dayStart, dayEnd)
-* Layout:
-
-  1. **Big ring** centered (reuse `RingView` with the same colors/progress semantics).
-  2. **Summary Row** (like TopView stats):
-
-     * Burned | Intake | Net | Goal
-  3. **Meals list** for that day (reuse look of MealsListView):
-
-     * Allow **add/edit/delete meals** for that day (date prefilled to selected date).
-     * On changes, update the cache for that day and refresh the UI.
-* Haptics:
-
-  * Light **success** on add.
-  * **Warning** on delete.
-
-## Ring Semantics (unchanged)
-
-* Surplus (not in deficit): red, `progress = burned / intake` (0 if intake==0).
-* Deficit: green, `progress = (burned - intake) / goal` (0 if goal==0).
-* Clamp 0…1.
-* Snapshot is **end-of-day** value.
-
-## Missing Data Rules
-
-* If **Health** or **Meals** missing:
-
-  * Show **empty gray ring** (progress 0).
-  * Day Detail shows zeros and “No data” footnote (optional).
-* Future days: dimmed/disabled, empty gray ring.
-
-## Performance
-
-* Use `HKStatisticsCollectionQuery` for range energy (daily).
-* Prefetch: **visible month ±1 month**.
-* Cache `DailySummary` so we don’t recompute when scrolling months.
-
-## File Plan (high-level)
-
-* `CalendarView.swift` — month header + grid UI, month navigation, haptics on change/tap.
-* `CalendarViewModel.swift` — date math, prefetch, cache reconciliation, published summaries.
-* `DayDetailView.swift` — big ring + summary + meals for day, CRUD actions.
-* `HealthStore+Range.swift` — `dailyEnergy(from:to:)` helper returning `[DailyEnergy]`.
-* `DailySummary.swift` — SwiftData model (see above).
-* (Existing) `RingView`, `MealsStore` APIs for day querying.
-
-## Acceptance Criteria
-
-* Navigating months (last 12 only) updates grid; tiny rings render fast without hitch.
-* Tapping any past or today date opens DayDetailView showing:
-
-  * Big ring with correct progress/color snapshot for that day.
-  * Summary row with Burned/Intake/Net/Goal.
-  * Meals list for that day; adding/editing/deleting updates the list and the ring **and** the cached DailySummary for that day.
-* Empty days display a gray ring (progress 0); future days are dimmed/disabled.
-* Haptics trigger as specified.
-
-## Testing Notes
-
-* Unit tests:
-
-  * `CalendarViewModel` date math (month ranges, weekday alignment).
-  * Caching: creating/updating `DailySummary` after computing a day.
-  * Ring math matches TopView logic per day.
-* Integration/UI tests:
-
-  * Month navigation + date tap opens DayDetailView.
-  * Adding a meal from DayDetailView updates intake and ring.
-
-## Constraints & Non-goals
-
-* Only last 12 months; no all-time scrolling right now.
-* No VoiceOver in this pass.
-* No cloud sync yet.
-
-## Implementation Tips
-
-* Normalize all day keys to **startOfDay** for dictionary/cache.
-* Keep view bodies simple; extract subviews for calendar cell and month header.
-* Use `@Environment(\.calendar)` and locale for weekday symbols; week start uses system default.
+amazing—here’s a **ready-to-paste Cursor background task prompt** that tells the agent exactly what to build for the **Apple Watch app** MVP based on your specs. It’s scoped, implementation-oriented, and avoids features you said not to include (no favorites/templates).
 
 ---
 
-If you need anything clarified while coding, ask me before making large structural changes. Keep code production-ready and consistent with the current project style (iOS 17+, SwiftUI + SwiftData, Apple-y visuals).
+# Background Task — Build **Deficit** watchOS MVP (rings + quick add)
+
+## Objective
+
+Create a **watchOS companion app** for **Deficit** that:
+
+* Shows today’s **ring(s)** (deficit ring always; **protein ring only if enabled** in iOS settings).
+* Has a **+** button (top-right) to open a **Quick Add** flow.
+* Supports **system Double Tap** (S9/Ultra 2) to activate the same on-screen buttons (no private APIs).
+* Quick Add uses the **Digital Crown** to set **Calories** (step ≈ 5) then **Protein** (step ≈ 1, **only if protein feature is enabled**). “Next →” moves Cal → Protein; “✓” confirms and logs a meal at **time = now** via WatchConnectivity to the iPhone; upon confirmation, the watch updates rings.
+
+No other features (e.g., favorites, templates, photos, complications) for this MVP.
+
+---
+
+## Architecture & Targets
+
+* Share small “ring math” helpers between iOS & watch if convenient, but **do not** import SwiftData on watch; use **WatchConnectivity** to sync summaries and to post quick-add meals.
+
+---
+
+## Data flow & contracts
+
+### Ring rules (same as iOS)
+
+* **Burned = Active + Basal** (from iPhone HealthKit summary).
+* **Intake = sum of meals** (from iPhone).
+* **Deficit ring**:
+
+  * **Surplus** (not in deficit): red, progress = `burned / intake` (0 if intake=0), clamp 0…1.
+  * **Deficit**: green, progress = `(burned - intake) / goal` (0 if goal=0), clamp 0…1.
+* **Protein ring** (when enabled in iOS): blue, progress = `proteinConsumed / proteinGoal` (can exceed 1.0 for over-goal visuals, cap the drawing at 1.0 but display 100%+ state in text if presented).
+
+### WatchConnectivity (WCSession)
+
+Implement a minimal JSON message protocol.
+
+* **Phone → Watch** (state push after app launch, foreground, or meal add):
+
+  ```json
+  {
+    "type": "todaySummary",
+    "payload": {
+      "dateStart": "ISO8601",   // startOfDay in local tz
+      "burnedKcal": 1234.0,
+      "intakeKcal": 900.0,
+      "netKcal": 334.0,
+      "goalKcal": 500.0,
+      "proteinEnabled": true,
+      "proteinConsumed": 60.0,
+      "proteinGoal": 100.0
+    }
+  }
+  ```
+
+* **Watch → Phone** (quick add request):
+
+  ```json
+  {
+    "type": "quickAddMeal",
+    "payload": {
+      "name": "Quick Add",
+      "kcal": 250.0,
+      "protein": 20.0,      // 0 if protein disabled or user skipped
+      "date": "ISO8601"     // now() on the watch
+    }
+  }
+  ```
+
+* **Phone → Watch** (ack + refreshed summary):
+
+  ```json
+  { "type": "ack", "payload": { "for": "quickAddMeal" } }
+  { "type": "todaySummary", ... }   // send right after saving
+  ```
+
+On the iPhone side (already exists): handle `quickAddMeal` by calling your Meals pipeline, then push `todaySummary` back.
+
+---
+
+## UI & Interaction (watchOS)
+
+### 1) **MainView** (today)
+
+* **Dual rings** when proteinEnabled = true (deficit outer, protein inner), else single deficit ring.
+* Small stats row (optional text labels beneath rings): Burned | Intake | Net (and Protein if enabled).
+* **Top-right + button** to open Quick Add.
+* **System Double Tap** should activate the **+** button when it’s the focused/primary element.
+
+**Implementation notes**
+
+* Use a clean SwiftUI layout with large tap targets.
+* For Double Tap compatibility: ensure actionable controls are **focusable** and expose a **primary action**. System Double Tap will trigger the current focused control’s primary action automatically—no private API. In SwiftUI:
+
+  * Use `Button` for +/Next/✓.
+  * Ensure `.accessibilityRespondsToUserInteraction(true)` on the container if needed.
+  * Keep one clear primary button on each screen so Double Tap maps naturally.
+
+### 2) **QuickAddFlowView**
+
+A paged flow with two steps:
+
+* **Step 1: Calories**
+
+  * Big number, units “kcal”
+  * Digital Crown controls a bound `@State` `calories` value.
+  * “Next →” button advances to Protein **only if** proteinEnabled=true; otherwise, the “✓ Add” button is shown directly.
+* **Step 2: Protein** (only if proteinEnabled)
+
+  * Big number, units “g”
+  * Digital Crown controls a bound `@State` `protein` value.
+  * “✓ Add” button confirms.
+
+**Digital Crown behavior**
+
+* Use `.digitalCrownRotation` with:
+
+  ```swift
+  .digitalCrownRotation($value,
+                        from: 0, through: maxValue,
+                        by: 1,
+                        sensitivity: .medium,
+                        isContinuous: true,
+                        isHapticFeedbackEnabled: true)
+  ```
+* Implement **speed/acceleration feeling**: bind Crown to a **raw** value and in `onChange` apply stepping rules:
+
+  * Calories: round to nearest **5** for display/storage.
+  * Protein: step **1**.
+  * Use `WKCrownSequencer` via `WKInterfaceDevice.current().play(.click)` is not needed; the SwiftUI modifier already gives haptics. For extra acceleration, track deltas/time between updates and add small acceleration (optional; keep simple if not needed).
+
+**Haptics**
+
+* Success tick when adding.
+* Light tick when moving to next step.
+
+**Buttons**
+
+* **Next →** (only appears on Calories when proteinEnabled).
+* **✓ Add**: sends the `quickAddMeal` message, then dismisses on ack.
+
+**Double Tap mapping**
+
+* On Step 1: Double Tap activates **Next →** (when visible) else **✓ Add**.
+* On Step 2: Double Tap activates **✓ Add**.
+* We don’t implement any private Double Tap API; this works by having the target button be the primary actionable control.
+
+---
+
+## Files to add (Watch Extension)
+
+* `WatchConnectivityManager.swift`
+
+  * `class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate`
+  * `@Published var summary: TodaySummary?`
+  * `func activate()`; handle incoming `todaySummary` / `ack`
+  * `func sendQuickAdd(kcal: Double, protein: Double)`
+  * JSON encode/decode helpers (Codable structs).
+
+* `TodaySummary.swift`
+
+  * `struct TodaySummary: Codable` mirroring the JSON payload (burned, intake, net, goal, proteinEnabled, proteinConsumed, proteinGoal).
+
+* `RingMath.swift` (shared or watch-only)
+
+  * Helpers to derive `deficitProgress` and `proteinProgress` from summary.
+
+* `MainView.swift`
+
+  * Shows ring(s) + stats + **+** button.
+  * Subscribes to `WatchConnectivityManager.summary`.
+  * On appear: `activate()`, and if no summary within \~1–2s, show “Waiting for phone…” placeholder.
+
+* `QuickAddFlowView.swift`
+
+  * `enum Step { case calories, protein }`
+  * `@State var step: Step = .calories`
+  * `@State var calories: Double = 0`
+  * `@State var protein: Double = 0`
+  * `.digitalCrownRotation` bound to a temporary raw value with rounding logic (kcal→nearest 5, protein→nearest 1).
+  * Buttons: **Next →** or **✓ Add** as described.
+  * On Add: `wc.sendQuickAdd(kcal: calories, protein: proteinEnabled ? protein : 0)`
+
+* `RingView.swift` (watch variant)
+
+  * Reuse your iOS ring visuals but scaled for watch.
+  * Support single (deficit only) or dual (deficit + protein) display.
+
+---
+
+## Settings dependency
+
+* The watch learns `proteinEnabled` and goals from the phone via `todaySummary`.
+* No on-watch settings page for MVP.
+
+---
+
+## Error/empty states
+
+* Before first sync: show “Waiting for phone…” and an empty gray ring.
+* If summary has zeros/missing data: show **empty gray ring** (progress=0).
+* If WCSession not supported: show a small inline error.
+
+---
+
+## Acceptance Criteria
+
+* App launches to **MainView** and displays:
+
+  * **Deficit ring** and, if enabled, **Protein ring**.
+  * A **+** button top-right.
+* Tapping **+** OR using **Double Tap** on the + (when it’s the primary control) opens **QuickAddFlowView**.
+* **Digital Crown** adjusts values (Calories rounded to 5s, Protein to 1s) with haptic feedback.
+* **Next →** moves to Protein step only if proteinEnabled; else skip to Add.
+* **✓ Add** sends a `quickAddMeal` to the phone; watch receives **ack** and then an updated **todaySummary** and updates rings.
+* System **Double Tap** activates the visible primary button on each step (Next/✓).
+* No references to favorites/templates/photos/complications.
+
+---
+
+## Testing notes (dev)
+
+* Add a mock “simulated summary” if WCSession is unavailable in simulator so the UI isn’t empty.
+* Unit-test `RingMath` helpers.
+* Quick manual test: run iPhone + Watch in sims, simulate a `todaySummary` push from iPhone target after launch.
+
+---
+
+## Implementation reminders
+
+* Keep SwiftUI view bodies lean; extract subviews if needed.
+* Use semantic colors and monospaced digits.
+* Keep one clear primary button per screen to play nice with system Double Tap.
+* Don’t use private APIs for Double Tap; rely on default primary action behavior.
+
+---
+
+**Deliverables:** the new Watch targets compile & run; MainView + QuickAddFlowView implemented; WCSession skeleton working; rings update after Add; no crashes.
+
+---
+
+If you want, I can also produce the **iPhone-side WCSession handler stub** you can drop into your app delegate/manager to receive `quickAddMeal`, persist it, and send `todaySummary` back.
