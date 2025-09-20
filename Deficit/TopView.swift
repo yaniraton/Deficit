@@ -155,8 +155,13 @@ struct TopView: View {
                     Button { showAddMeal = true } label: { Image(systemName: "plus") }
                 }
                 ToolbarItem(placement: .topBarLeading) {
-                    NavigationLink(destination: SettingsView()) {
-                        Image(systemName: "gearshape")
+                    HStack(spacing: 16) {
+                        NavigationLink(destination: CalendarView()) {
+                            Image(systemName: "calendar")
+                        }
+                        NavigationLink(destination: SettingsView()) {
+                            Image(systemName: "gearshape")
+                        }
                     }
                 }
             }

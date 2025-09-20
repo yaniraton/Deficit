@@ -14,6 +14,6 @@ struct DeficitApp: App {
             TopView()
             
         }
-        .modelContainer(for: [Meal.self])   // <-- SwiftData container
+        .modelContainer(for: [Meal.self, DailySummary.self])   // <-- SwiftData container
     }
 }

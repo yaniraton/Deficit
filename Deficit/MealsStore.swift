@@ -59,4 +59,39 @@ final class MealsStore: ObservableObject {
         try ctx.save()
         Task { await self.reloadToday() }
     }
+    
+    // MARK: - Day Range Queries
+    
+    /// Returns total intake calories for a specific day
+    func intake(forDay dayStart: Date, dayEnd: Date) throws -> Double {
+        guard let ctx = modelContext else { return 0 }
+        
+        let descriptor = FetchDescriptor<Meal>(
+            predicate: #Predicate { $0.date >= dayStart && $0.date < dayEnd }
+        )
+        let meals = (try? ctx.fetch(descriptor)) ?? []
+        return meals.reduce(0) { $0 + $1.kcal }
+    }
+    
+    /// Returns total protein grams for a specific day
+    func protein(forDay dayStart: Date, dayEnd: Date) throws -> Double {
+        guard let ctx = modelContext else { return 0 }
+        
+        let descriptor = FetchDescriptor<Meal>(
+            predicate: #Predicate { $0.date >= dayStart && $0.date < dayEnd }
+        )
+        let meals = (try? ctx.fetch(descriptor)) ?? []
+        return meals.reduce(0) { $0 + $1.proteinGrams }
+    }
+    
+    /// Returns all meals for a specific day
+    func meals(forDay dayStart: Date, dayEnd: Date) throws -> [Meal] {
+        guard let ctx = modelContext else { return [] }
+        
+        let descriptor = FetchDescriptor<Meal>(
+            predicate: #Predicate { $0.date >= dayStart && $0.date < dayEnd },
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        return (try? ctx.fetch(descriptor)) ?? []
+    }
 }

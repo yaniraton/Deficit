@@ -21,6 +21,13 @@ struct AddMealSheet: View {
         self.onDismiss = nil
     }
     
+    init(initialDate: Date) {
+        self.isEditMode = false
+        self.mealToUpdate = nil
+        self.onDismiss = nil
+        self._date = State(initialValue: initialDate)
+    }
+    
     init(initialName: String, initialKcal: Double, initialProteinGrams: Double, initialDate: Date, isEditMode: Bool, mealToUpdate: Meal?, onDismiss: @escaping () -> Void) {
         self.isEditMode = isEditMode
         self.mealToUpdate = mealToUpdate

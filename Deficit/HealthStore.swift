@@ -24,6 +24,13 @@ final class HealthStore: NSObject {
         let basalKcal: Double
         var totalKcal: Double { activeKcal + basalKcal }
     }
+    
+    struct DailyEnergy {
+        let date: Date         // startOfDay
+        let activeKcal: Double
+        let basalKcal: Double
+        var burnedKcal: Double { activeKcal + basalKcal }
+    }
 
     // Errors
     enum HKError: LocalizedError {
@@ -62,10 +69,84 @@ final class HealthStore: NSObject {
         return .init(activeKcal: max(0, a), basalKcal: max(0, b))
     }
 
-    /// Convenience: today’s range in current calendar/locale.
+    /// Convenience: today's range in current calendar/locale.
     func todayCalories() async throws -> CaloriesBreakdown {
         let start = Calendar.current.startOfDay(for: Date())
         return try await calories(from: start, to: Date())
+    }
+    
+    /// Returns daily energy breakdown for a date range using HKStatisticsCollectionQuery
+    func dailyEnergy(from start: Date, to end: Date) async throws -> [DailyEnergy] {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: start)
+        let endOfDay = calendar.startOfDay(for: end)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
+            
+            // Create collection query for active energy
+            let activeQuery = HKStatisticsCollectionQuery(
+                quantityType: activeType,
+                quantitySamplePredicate: predicate,
+                options: .cumulativeSum,
+                anchorDate: startOfDay,
+                intervalComponents: DateComponents(day: 1)
+            )
+            
+            // Create collection query for basal energy
+            let basalQuery = HKStatisticsCollectionQuery(
+                quantityType: basalType,
+                quantitySamplePredicate: predicate,
+                options: .cumulativeSum,
+                anchorDate: startOfDay,
+                intervalComponents: DateComponents(day: 1)
+            )
+            
+            var activeResults: [Date: Double] = [:]
+            var basalResults: [Date: Double] = [:]
+            var completedQueries = 0
+            
+            let processResults = {
+                completedQueries += 1
+                if completedQueries == 2 {
+                    // Combine results
+                    var dailyEnergies: [DailyEnergy] = []
+                    var currentDate = startOfDay
+                    
+                    while currentDate < endOfDay {
+                        let active = activeResults[currentDate] ?? 0
+                        let basal = basalResults[currentDate] ?? 0
+                        dailyEnergies.append(DailyEnergy(
+                            date: currentDate,
+                            activeKcal: max(0, active),
+                            basalKcal: max(0, basal)
+                        ))
+                        currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
+                    }
+                    
+                    continuation.resume(returning: dailyEnergies)
+                }
+            }
+            
+            activeQuery.initialResultsHandler = { _, collection, _ in
+                collection?.enumerateStatistics(from: startOfDay, to: endOfDay) { statistics, _ in
+                    let value = statistics.sumQuantity()?.doubleValue(for: self.kcal) ?? 0
+                    activeResults[statistics.startDate] = value
+                }
+                processResults()
+            }
+            
+            basalQuery.initialResultsHandler = { _, collection, _ in
+                collection?.enumerateStatistics(from: startOfDay, to: endOfDay) { statistics, _ in
+                    let value = statistics.sumQuantity()?.doubleValue(for: self.kcal) ?? 0
+                    basalResults[statistics.startDate] = value
+                }
+                processResults()
+            }
+            
+            healthStore.execute(activeQuery)
+            healthStore.execute(basalQuery)
+        }
     }
 
     // MARK: - Private helpers
