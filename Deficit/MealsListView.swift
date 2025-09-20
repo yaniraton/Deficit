@@ -6,6 +6,7 @@ struct MealsListView: View {
     @Environment(\.modelContext) private var context
     @StateObject private var store = MealsStore.shared
     @State private var showingAdd = false
+    @State private var showingEdit: Meal? = nil
     @AppStorage("proteinFeatureEnabled") private var proteinEnabled: Bool = true
 
     var body: some View {
@@ -39,7 +40,14 @@ struct MealsListView: View {
                                 }
                             }
                         }
-                        .swipeActions {
+                        .swipeActions(edge: .trailing) {
+                            Button {
+                                showingEdit = meal
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(.blue)
+                            
                             Button(role: .destructive) {
                                 try? store.deleteMeal(meal)
                                 UINotificationFeedbackGenerator().notificationOccurred(.warning)
@@ -68,6 +76,9 @@ struct MealsListView: View {
         }
         .sheet(isPresented: $showingAdd) {
             AddMealSheet()
+        }
+        .sheet(item: $showingEdit) { meal in
+            EditMealSheet(meal: meal)
         }
     }
 }

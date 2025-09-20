@@ -8,6 +8,28 @@ struct AddMealSheet: View {
     @State private var proteinGrams: Double = 0
     @State private var date: Date = Date()
     @AppStorage("proteinFeatureEnabled") private var proteinEnabled: Bool = true
+    
+    // Edit mode parameters
+    private let isEditMode: Bool
+    private let mealToUpdate: Meal?
+    private let onDismiss: (() -> Void)?
+    
+    // Initializers
+    init() {
+        self.isEditMode = false
+        self.mealToUpdate = nil
+        self.onDismiss = nil
+    }
+    
+    init(initialName: String, initialKcal: Double, initialProteinGrams: Double, initialDate: Date, isEditMode: Bool, mealToUpdate: Meal?, onDismiss: @escaping () -> Void) {
+        self.isEditMode = isEditMode
+        self.mealToUpdate = mealToUpdate
+        self.onDismiss = onDismiss
+        self._name = State(initialValue: initialName)
+        self._kcal = State(initialValue: initialKcal)
+        self._proteinGrams = State(initialValue: initialProteinGrams)
+        self._date = State(initialValue: initialDate)
+    }
 
     var body: some View {
         NavigationView {
@@ -48,19 +70,38 @@ struct AddMealSheet: View {
                     }
                 }
             }
-            .navigationTitle("Add Meal")
+            .navigationTitle(isEditMode ? "Edit Meal" : "Add Meal")
             
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") { 
+                        if let onDismiss = onDismiss {
+                            onDismiss()
+                        } else {
+                            dismiss()
+                        }
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(isEditMode ? "Update" : "Save") {
                         Task {
                             let protein = proteinEnabled ? proteinGrams : 0
-                            try? await MealsStore.shared.addMeal(name: name, kcal: kcal, proteinGrams: protein, date: date)
+                            
+                            if isEditMode, let meal = mealToUpdate {
+                                // Update existing meal
+                                try? MealsStore.shared.updateMeal(meal, name: name, kcal: kcal, proteinGrams: protein, date: date)
+                            } else {
+                                // Add new meal
+                                try? await MealsStore.shared.addMeal(name: name, kcal: kcal, proteinGrams: protein, date: date)
+                            }
+                            
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            dismiss()
+                            
+                            if let onDismiss = onDismiss {
+                                onDismiss()
+                            } else {
+                                dismiss()
+                            }
                         }
                     }
                     .disabled(kcal <= 0)
