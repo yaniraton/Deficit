@@ -6,6 +6,7 @@ struct TopView: View {
     @StateObject private var vm = DeficitViewModel()
     @Environment(\.modelContext) private var context
     @StateObject private var meals = MealsStore.shared
+    @StateObject private var watchConnectivity = iOSWatchConnectivityManager.shared
     @State private var showMeals = false
     @State private var showAddMeal = false
     @State private var lastInDeficit: Bool = false
@@ -143,6 +144,30 @@ struct TopView: View {
                 await vm.requestAuthAndLoadToday()
                 meals.attach(context: context)
                 vm.bindMeals(meals)
+                watchConnectivity.setup(deficitViewModel: vm, mealsStore: meals)
+            }
+            // Watch connectivity updates
+            .onChange(of: vm.burned) { _ in
+                watchConnectivity.sendTodaySummary()
+            }
+            .onChange(of: vm.intake) { _ in
+                watchConnectivity.sendTodaySummary()
+            }
+            .onChange(of: vm.goal) { _ in
+                watchConnectivity.sendTodaySummary()
+            }
+            .onChange(of: vm.proteinEnabled) { _ in
+                watchConnectivity.sendTodaySummary()
+            }
+            .onChange(of: vm.todayProteinGrams) { _ in
+                watchConnectivity.sendTodaySummary()
+            }
+            .onChange(of: vm.proteinGoalGrams) { _ in
+                watchConnectivity.sendTodaySummary()
+            }
+            .onAppear {
+                // Send summary when app becomes active
+                watchConnectivity.sendTodaySummary()
             }
             .sheet(isPresented: $showMeals) {
                 NavigationView { MealsListView() }
