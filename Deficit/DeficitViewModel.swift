@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import UIKit
 
 @MainActor
 final class DeficitViewModel: ObservableObject {
@@ -17,6 +18,8 @@ final class DeficitViewModel: ObservableObject {
     @Published private(set) var todayProteinGrams: Double = 0
     @AppStorage("proteinFeatureEnabled") var proteinEnabled: Bool = true
     @AppStorage("dailyProteinGoalGrams") var proteinGoalGrams: Double = 50
+    @AppStorage("proteinGoalAchievedToday") private var proteinGoalAchievedToday: Bool = false
+    
     var proteinProgress: Double {
         guard proteinGoalGrams > 0 else { return 0 }
         return min(max(todayProteinGrams / proteinGoalGrams, 0), 1)
@@ -52,6 +55,7 @@ final class DeficitViewModel: ObservableObject {
     }
 
     private var cancellables = Set<AnyCancellable>()
+    private var previousProteinProgress: Double = 0
     /// Bind intake and protein to MealsStore's published values
     func bindMeals(_ store: MealsStore = .shared) {
         store.$todayIntakeKcal
@@ -61,7 +65,13 @@ final class DeficitViewModel: ObservableObject {
 
         store.$todayProteinGrams
             .receive(on: DispatchQueue.main)
-            .assign(to: \.todayProteinGrams, on: self)
+            .sink { [weak self] newProteinGrams in
+                guard let self = self else { return }
+                self.todayProteinGrams = newProteinGrams
+                
+                // Check for protein goal achievement
+                self.checkProteinGoalAchievement()
+            }
             .store(in: &cancellables)
     }
 
@@ -80,5 +90,37 @@ final class DeficitViewModel: ObservableObject {
         self.activeKcal = res.activeKcal
         self.basalKcal  = res.basalKcal
         await HealthStore.shared.refresh()
+        
+        // Reset protein goal achievement for new day
+        resetProteinGoalAchievementIfNeeded()
+    }
+    
+    // MARK: - Protein Goal Achievement
+    
+    private func checkProteinGoalAchievement() {
+        guard proteinEnabled else { return }
+        
+        let currentProgress = proteinProgress
+        
+        // Check if we just reached 100% goal
+        if currentProgress >= 1.0 && previousProteinProgress < 1.0 && !proteinGoalAchievedToday {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            proteinGoalAchievedToday = true
+        }
+        
+        // Update previous progress for next comparison
+        previousProteinProgress = currentProgress
+    }
+    
+    private func resetProteinGoalAchievementIfNeeded() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let lastReset = UserDefaults.standard.object(forKey: "lastProteinGoalReset") as? Date ?? Date.distantPast
+        
+        if !calendar.isDate(lastReset, inSameDayAs: today) {
+            proteinGoalAchievedToday = false
+            previousProteinProgress = 0
+            UserDefaults.standard.set(today, forKey: "lastProteinGoalReset")
+        }
     }
 }
